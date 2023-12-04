@@ -175,6 +175,7 @@
       }
     });
     canvas.addEventListener("touchmove", (e) => {
+      e.preventDefault();
       ctx.fillStyle = state.color;
       ctx.beginPath();
       switch (state.shape) {
