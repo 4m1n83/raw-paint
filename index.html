@@ -75,6 +75,10 @@
   <script>
     const canvas = document.querySelector("#canvas");
     const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    ctx.fillRect(0, 0, 350, 350);
+    ctx.fill();
     const { x, y, width, height } = canvas.getBoundingClientRect();
     const state = {
       isMouseClicked: false,
