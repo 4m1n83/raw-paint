@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      #canvas {
+        border: 1px solid black;
+        border-radius: 5px;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .button {
+        width: 40px;
+        height: 40px;
+        border: 1px solid black;
+        text-align: center;
+        font-size: 1.5rem;
+        line-height: 1.75;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+      .controls {
+        display: flex;
+        gap: 2px;
+        margin-top: 2px;
+      }
+      .action {
+        width: 80px;
+        height: 40px;
+        margin-top: 2px;
+        font-size: 1.5rem;
+      }
+      input,
+      button {
+        background-color: white;
+        border-radius: 5px;
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <canvas id="canvas" width="350" height="200"></canvas>
+
+      <div class="controls">
+        <input
+          class="button colorpick"
+          type="color"
+          value="#0000ff"
+          style="width: 42px; height: 42px" />
+        <div class="button" style="background-color: white" data-color="white">
+          🧽
+        </div>
+        <div class="button" data-shape="circle">〇</div>
+        <div class="button" data-shape="square">▢</div>
+        <div class="button" data-shape="heart">♡</div>
+      </div>
+      <div class="controls">
+        <button class="action clear">🗑</button>
+        <button class="action save">💾</button>
+      </div>
+    </div>
+  </body>
+  <script>
+    const canvas = document.querySelector("#canvas");
+    const ctx = canvas.getContext("2d");
+    const { x, y, width, height } = canvas.getBoundingClientRect();
+    const state = {
+      isMouseClicked: false,
+      color: "#0000ff",
+      shape: "circle",
+    };
+
+    function drawCircle(context, x, y) {
+      context.arc(x, y, 10, 0, 2 * Math.PI);
+    }
+
+    function drawHeart(context, x, y) {
+      y = y - 10;
+      context.moveTo(x, y + 8);
+      context.bezierCurveTo(x, y, x - 11, y, x - 11, y + 8);
+      context.bezierCurveTo(x - 11, y + 15, x, y + 15, x, y + 22);
+      context.bezierCurveTo(x, y + 15, x + 11, y + 15, x + 11, y + 8);
+      context.bezierCurveTo(x + 10, y, x, y, x, y + 8);
+      context.closePath();
+    }
+
+    function drawSquare(context, x, y) {
+      context.fillRect(x - 10, y - 10, 20, 20);
+    }
+
+    document.querySelector(".colorpick").addEventListener("input", (e) => {
+      state.color = e.target.value;
+    });
+    document.querySelectorAll(".button").forEach((elt) => {
+      ["click", "touch"].forEach((event) => {
+        elt.addEventListener(event, (e) => {
+          document.querySelectorAll("div.button").forEach((c) => {
+            c.style = "background-color: white";
+          });
+          if (e.target.tagName === "DIV") {
+            e.target.style = "background-color: lightgrey";
+          }
+          if (e.target.getAttribute("data-color")) {
+            state.color = e.target.getAttribute("data-color");
+          } else if (e.target.getAttribute("data-shape")) {
+            state.shape = e.target.getAttribute("data-shape");
+            state.color = document.querySelector(".colorpick").value;
+          }
+        });
+      });
+    });
+    canvas.addEventListener("mousedown", () => {
+      state.isMouseClicked = true;
+    });
+    canvas.addEventListener("mouseup", () => {
+      state.isMouseClicked = false;
+    });
+    ["click", "touch"].forEach((event) => {
+      canvas.addEventListener(event, (e) => {
+        ctx.fillStyle = state.color;
+        ctx.beginPath();
+        switch (state.shape) {
+          case "circle":
+            drawCircle(ctx, e.clientX - x, e.clientY - y);
+            break;
+          case "heart":
+            drawHeart(ctx, e.clientX - x, e.clientY - y);
+            break;
+          case "square":
+            drawSquare(ctx, e.clientX - x, e.clientY - y);
+            break;
+          default:
+            break;
+        }
+        ctx.fill();
+        ctx.closePath();
+      });
+    });
+    canvas.addEventListener("mousemove", (e) => {
+      if (state.isMouseClicked) {
+        ctx.fillStyle = state.color;
+        ctx.beginPath();
+        switch (state.shape) {
+          case "circle":
+            drawCircle(ctx, e.clientX - x, e.clientY - y);
+            break;
+          case "heart":
+            drawHeart(ctx, e.clientX - x, e.clientY - y);
+            break;
+          case "square":
+            drawSquare(ctx, e.clientX - x, e.clientY - y);
+            break;
+          default:
+            break;
+        }
+        ctx.fill();
+      }
+    });
+    canvas.addEventListener("touchmove", (e) => {
+      ctx.fillStyle = state.color;
+      ctx.beginPath();
+      switch (state.shape) {
+        case "circle":
+          drawCircle(
+            ctx,
+            e.changedTouches[0].clientX - x,
+            e.changedTouches[0].clientY - y
+          );
+          break;
+        case "heart":
+          drawHeart(
+            ctx,
+            e.changedTouches[0].clientX - x,
+            e.changedTouches[0].clientY - y
+          );
+          break;
+        case "square":
+          drawSquare(
+            ctx,
+            e.changedTouches[0].clientX - x,
+            e.changedTouches[0].clientY - y
+          );
+          break;
+        default:
+          break;
+      }
+      ctx.fill();
+    });
+    document.querySelector(".clear").addEventListener("click", () => {
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, width, height);
+    });
+    document.querySelector(".save").addEventListener("click", () => {
+      const link = document.createElement("a");
+      link.download = "download.png";
+      link.href = canvas.toDataURL();
+      link.click();
+      link.delete;
+    });
+  </script>
+</html>
